@@ -26,8 +26,8 @@ describe('fakeGmail', function() {
   
   describe('with messages added', function() {
     beforeEach(function() {
-      var message = {id: 'M1', threadId: 'T1'};
-      subject.addMessage(message);
+      subject.addMessage({id: 'M1', threadId: 'T1'});
+      subject.addMessage({id: 'M2', threadId: 'T1'});
     });
     
     describe('users.threads.list', function() {
@@ -48,6 +48,10 @@ describe('fakeGmail', function() {
       it('should not include the messages', function() {
         expect(res.threads[0].messages).to.be.undefined;
       });
+      
+      it('should only include each thread once', function() {
+        expect(res.threads.length).to.equal(1);
+      });
     });
     
     describe('users.threads.get', function() {
@@ -55,6 +59,7 @@ describe('fakeGmail', function() {
         client.gmail.users.threads.get({ userId: 'me', id: 'T1'}).withAuthClient(authClient).execute(function(err, res) {
           expect(err).to.be.null;
           expect(res.messages[0].id).to.equal('M1');
+          expect(res.messages[1].id).to.equal('M2');
           done();
         });
       });

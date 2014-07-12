@@ -3,8 +3,12 @@ module.exports = function() {
   var threadIndex = {};
   return {
     addMessage: function(message) {
-      var thread = { id: message.threadId, messages: [ message ]};
-      threads.push(thread);
+      var thread = threadIndex[message.threadId]
+      if (!thread) {
+        thread = { id: message.threadId, messages: [] };
+        threads.push(thread);
+      }
+      thread.messages.push(message);
       threadIndex[thread.id] = thread;
     },
     
