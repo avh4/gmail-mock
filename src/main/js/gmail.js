@@ -1,14 +1,16 @@
 module.exports = function() {
   var threads = [];
+  var threadIndex = {};
   return {
-    addMessage: function(message) { 
-      threads.push({ id: message.threadId, messages: [ message ]});
+    addMessage: function(message) {
+      var thread = { id: message.threadId, messages: [ message ]};
+      threads.push(thread);
+      threadIndex[thread.id] = thread;
     },
     
     discover: function() {
       return {
         execute: function(callback) {
-          var err;
           var client = {
             gmail: {
               users: {
@@ -18,24 +20,34 @@ module.exports = function() {
                       withAuthClient: function() {
                         return {
                           execute: function(callback) {
-                            var err;
                             var res = { threads: threads.map(function (t) {
                               return { id: t.id };
                             }) };
-                            callback(err, res);
+                            callback(null, res);
                           }
                         }
                       }
                     }
                   },
-                  get: function(id) {
+                  get: function(params) {
                     return {
                       withAuthClient: function() {
                         return {
                           execute: function(callback) {
-                            var err;
-                            var res = threads[0];
-                            callback(err, res);
+                            var res = threadIndex[params.id];
+                            if (res) {
+                              callback(null, res);
+                            } else {
+                              callback({
+                                errors: [{
+                                  domain: 'global',
+                                  reason: 'invalidArgument',
+                                  message: 'Invalid id value'
+                                }],
+                                code: 400,
+                                message: 'Invalid id value'
+                              }, null);
+                            }
                           }
                         }
                       }
@@ -45,7 +57,7 @@ module.exports = function() {
               }
             }
           }
-          callback(err, client);
+          callback(null, client);
         }
       }
     }

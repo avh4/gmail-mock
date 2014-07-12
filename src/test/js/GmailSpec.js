@@ -18,6 +18,7 @@ describe('fakeGmail', function() {
   
   it('should return no threads when there are no messages added', function(done) {
     client.gmail.users.threads.list({ userId: 'me', q: 'in:inbox' }).withAuthClient(authClient).execute(function(err, res) {
+      expect(err).to.be.null;
       expect(res.threads).to.eql([]);
       done();
     });
@@ -34,6 +35,7 @@ describe('fakeGmail', function() {
       
       beforeEach(function(done) {
         client.gmail.users.threads.list({ userId: 'me', q: 'in:inbox' }).withAuthClient(authClient).execute(function(err, _res) {
+          expect(err).to.be.null;
           res = _res;
           done();
         });
@@ -50,11 +52,28 @@ describe('fakeGmail', function() {
     
     describe('users.threads.get', function() {
       it('should return the list of messages', function(done) {
-        client.gmail.users.threads.get({ id: 'T1'}).withAuthClient(authClient).execute(function(err, res) {
+        client.gmail.users.threads.get({ userId: 'me', id: 'T1'}).withAuthClient(authClient).execute(function(err, res) {
+          expect(err).to.be.null;
           expect(res.messages[0].id).to.equal('M1');
           done();
         });
       });
-    })
+      
+      it('should return error for invalid thread id', function(done) {
+        client.gmail.users.threads.get({ userId: 'me', id: 'BAD_ID'}).withAuthClient(authClient).execute(function(err, res) {
+          expect(err).to.eql({
+            errors: [ {
+              domain: 'global',
+              reason: 'invalidArgument',
+              message: 'Invalid id value'
+            } ],
+            code: 400,
+            message: 'Invalid id value'
+          });
+          expect(res).to.be.null;
+          done();
+        });
+      });
+    });
   });
 });
