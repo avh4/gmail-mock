@@ -2,7 +2,7 @@ module.exports = function() {
   var threads = [];
   return {
     addMessage: function(message) { 
-      // threads.push({});
+      threads.push({ messages: [ message ]});
     },
     
     discover: function() {
